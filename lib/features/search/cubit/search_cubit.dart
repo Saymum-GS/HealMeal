@@ -1,25 +1,26 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/data/models.dart';
+import '../../../core/models.dart';
 import 'package:equatable/equatable.dart';
 
 part 'search_state.dart';
 
 class SearchCubit extends Cubit<SearchState> {
-  SearchCubit() : super(const SearchState());
+  SearchCubit() : super(SearchState());
 
   Future<void> search(String query, List<Product> allProducts) async {
     if (query.trim().isEmpty) {
-      emit(const SearchState());
+      emit(SearchState());
       return;
     }
     emit(state.copyWith(status: SearchStatus.loading, query: query));
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(Duration(milliseconds: 300));
+    final q = query.toLowerCase();
     final results = allProducts
         .where(
-          (item) =>
-              item.name.toLowerCase().contains(query.toLowerCase()) ||
-              item.brandName.toLowerCase().contains(query.toLowerCase()),
+          (p) =>
+              p.drugName.toLowerCase().contains(q) ||
+              p.manufacturer.toLowerCase().contains(q),
         )
         .toList();
     emit(
@@ -31,4 +32,3 @@ class SearchCubit extends Cubit<SearchState> {
     );
   }
 }
-

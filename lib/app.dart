@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'core/localization/locale_cubit.dart';
-import 'core/router/app_router.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/theme_cubit.dart';
+import 'core/localization.dart';
+import 'core/router.dart';
+import 'core/theme.dart';
 
-import 'features/auth/cubit/auth_cubit.dart';
+import 'features/auth/auth_cubit.dart';
 
 class HealMealApp extends StatefulWidget {
   const HealMealApp({super.key});
@@ -38,7 +37,7 @@ class _HealMealAppState extends State<HealMealApp> {
               darkTheme: AppTheme.darkTheme,
               themeMode: themeMode,
               locale: locale,
-              supportedLocales: const [Locale('en'), Locale('bn')],
+              supportedLocales: [Locale('en'), Locale('bn')],
               localizationsDelegates: AppTheme.localizationsDelegates,
               routerConfig: _router,
             );
@@ -48,4 +47,3 @@ class _HealMealAppState extends State<HealMealApp> {
     );
   }
 }
-

@@ -1,15 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../core/data/models.dart';
+import '../../../core/models.dart';
 
 enum ProductSort {
   relevance,
-  priceLowToHigh,
-  priceHighToLow,
-  rating,
-  newest,
   alphabetical,
-  discount,
 }
 
 class ProductState extends Equatable {
@@ -52,4 +47,3 @@ class ProductState extends Equatable {
     sortBy,
   ];
 }
-

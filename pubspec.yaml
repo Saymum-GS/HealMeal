@@ -12,8 +12,6 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In Android, build-name is used as versionName while build-number used as versionCode.
 # Read more about Android versioning at https://developer.android.com/studio/publish/versioning
 # In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 version: 1.0.0+1
@@ -21,12 +19,6 @@ version: 1.0.0+1
 environment:
   sdk: ^3.10.8
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
@@ -41,43 +33,48 @@ dependencies:
   shimmer: ^3.0.0
   carousel_slider: ^5.1.2
   pinput: ^5.0.0
-  badges: ^3.1.2
+  badges: ^3.2.0
   flutter_rating_bar: ^4.0.1
   table_calendar: ^3.1.0
   dotted_border: ^2.1.0
   intl: ^0.20.2
   shared_preferences: ^2.2.3
   url_launcher: ^6.3.0
-  share_plus: ^9.0.0
+  share_plus: ^13.1.0
   google_fonts: ^6.2.1
-  firebase_core: ^3.4.0
-  cloud_firestore: ^5.4.0
-  firebase_auth: ^5.2.0
-  firebase_messaging: ^15.0.0
+  firebase_core: ^4.9.0
+  cloud_firestore: ^6.4.1
+  firebase_auth: ^6.5.1
+  firebase_messaging: ^16.4.0
   image_picker: ^1.2.2
-  firebase_storage: ^12.2.0
+  collection: ^1.19.1
+  http: ^1.6.0
+  speech_to_text: ^7.4.0
+  flutter_dotenv: ^6.0.1
+  flutter_animate: ^4.5.2
+  flutter_local_notifications: ^22.0.1
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  bloc_test: ^9.1.0          # Cubit/Bloc unit testing
+  mocktail: ^0.3.0          # Simple mocking library
+  integration_test:
+    sdk: flutter           # E2E on real APK
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
-# The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/images/
     - assets/icons/
     - assets/lottie/
+    - assets/data.json
 
   fonts:
     - family: NotoSansBengali
@@ -98,3 +95,16 @@ flutter:
           weight: 500
         - asset: assets/fonts/DMSans-Bold.ttf
           weight: 700
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/healmeal_logo.webp"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/images/healmeal_logo.webp"
+  android_12:
+    image: "assets/images/healmeal_logo.webp"
+    color: "#ffffff"

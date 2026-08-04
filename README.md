@@ -1,54 +1,52 @@
 # HealMeal
 
-HealMeal is a production-grade Flutter healthcare commerce application designed for the Bangladeshi market. It provides a complete end-to-end experience for medicine browsing, prescription management, lab test booking, and role-based logistics.
+Welcome to the **HealMeal** application repository! 
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.38.9-blue.svg)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.10.8-blue.svg)](https://dart.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+HealMeal is a comprehensive Flutter-based platform designed to provide seamless access to healthcare products, lab test bookings, prescription uploads, and role-based management (Admin, Pharmacist, Rider, Lab Technician, and Business roles).
 
-## 🚀 Quick Start
+## Features
 
-1. **Prerequisites**: Ensure Flutter 3.38.9+ is installed.
-2. **Setup**: Run `flutter pub get` to install dependencies.
-3. **Run**: Use `flutter run` to launch on your preferred device.
+- **User & Role Management**: Tailored experiences for Customers, Admins, Pharmacists, Lab Techs, and Riders.
+- **E-Commerce & Pharmacy**: Browse and search for medical products, add to cart, and checkout seamlessly.
+- **Prescription Uploads**: Easily upload prescriptions for fast medication processing.
+- **Lab Tests**: Book and manage laboratory tests and diagnostics.
+- **Order Tracking**: Real-time tracking and history for orders and deliveries.
+- **AI Chat Assistant**: Integrated AI search and support powered by Groq.
+- **Secure Backend**: Powered by Firebase (Auth, Firestore) with strict security rules.
 
-For detailed setup instructions, see [SETUP.md](./SETUP.md).
+## Getting Started
 
-## ✨ Key Features
+### Prerequisites
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- [Dart SDK](https://dart.dev/get-dart)
+- A Firebase project configured with Firestore and Authentication.
 
-- **Authentication**: Firebase-backed email/password login with role-based routing.
-- **Product Catalog**: Categorized medicine browsing with real-time Firestore synchronization.
-- **Prescription Management**: Secure upload to Firebase Storage with pharmacist review workflows.
-- **Lab Test Booking**: Comprehensive diagnostic service booking with home collection options.
-- **Order Tracking**: Real-time order status updates and history management.
-- **Role-Based Access**: Specialized dashboards for Patients, Pharmacists, Riders, Admins, and Lab Technicians.
-- **Local Persistence**: Resilient state management for offline-first capabilities using `shared_preferences`.
+### Installation
 
-## 🏗️ Architecture
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Saymum-GS/HealMeal.git
+   cd HealMeal
+   ```
 
-HealMeal follows a **Feature-First Architecture** combined with the **BLoC** (Business Logic Component) pattern. This ensures a strict separation of concerns and high scalability.
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
 
-- **Core**: Shared infrastructure, design tokens, and global utilities.
-- **Features**: Isolated business domains containing their own UI, logic, and models.
-- **Data Layer**: Live Firestore integration with authentic medical data seeding for production readiness.
+3. **Environment Setup**
+   Create a `.env` file in the root directory and add your required API keys (e.g., `GROQ_API_KEY`).
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for a deep dive into the system design.
+4. **Run the app**
+   ```bash
+   flutter run
+   ```
 
-## 🛠️ Development & Contribution
-
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for our coding standards and pull request process.
-
-For interview preparation and technical walkthroughs, refer to [DEVELOPMENT.md](./DEVELOPMENT.md).
-
-## 📄 Documentation Hierarchy
-
-- [**README.md**](./README.md): Project overview and quick start.
-- [**ARCHITECTURE.md**](./ARCHITECTURE.md): Structural overview and design patterns.
-- [**SETUP.md**](./SETUP.md): Environment configuration and build instructions.
-- [**DEVELOPMENT.md**](./DEVELOPMENT.md): Technical walkthroughs and interview guides.
-- [**DEPLOYMENT.md**](./DEPLOYMENT.md): CI/CD and release processes.
-- [**CONTRIBUTING.md**](./CONTRIBUTING.md): Guidelines for contributors.
+## Architecture & Tech Stack
+- **Framework**: [Flutter](https://flutter.dev/)
+- **State Management**: [Cubit / BLoC](https://bloclibrary.dev/)
+- **Backend**: Firebase (Firestore, Authentication, Admin SDK)
+- **AI Integration**: Groq API for intelligent search and chat features.
 
 ---
-
-© 2026 HealMeal. Built for a healthier Bangladesh.
+*HealMeal - Making healthcare and nutrition accessible for everyone.*

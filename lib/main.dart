@@ -1,74 +1,175 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'features/account/notification_cubit.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app.dart';
-import 'core/cubits/wishlist_cubit.dart';
-import 'core/localization/locale_cubit.dart';
-import 'core/theme/theme_cubit.dart';
-import 'core/utils/app_session.dart';
-import 'core/utils/database_initializer.dart';
-import 'features/auth/cubit/auth_cubit.dart';
-import 'features/cart/cubit/cart_cubit.dart';
-import 'features/checkout/cubit/checkout_cubit.dart';
+import 'features/products/product_cubit.dart';
+import 'features/products/wishlist_cubit.dart';
+import 'core/localization.dart';
+import 'core/theme.dart';
+import 'core/utils.dart';
+import 'features/auth/auth_cubit.dart';
+import 'features/cart/cart_cubit.dart';
+import 'features/orders/orders_cubit.dart';
 import 'features/home/cubit/home_cubit.dart';
-import 'features/orders/cubit/orders_cubit.dart';
-import 'features/products/cubit/product_cubit.dart';
-import 'core/repositories/order_repository.dart';
-import 'core/repositories/lab_test_repository.dart';
-import 'core/repositories/prescription_repository.dart';
-import 'features/lab_tests/cubit/lab_test_cubit.dart';
-import 'features/prescriptions/cubit/prescription_cubit.dart';
-import 'core/repositories/user_repository.dart';
-import 'core/repositories/offer_repository.dart';
-import 'core/repositories/suggestion_repository.dart';
-import 'core/repositories/lab_repository.dart';
-import 'features/roles/admin/cubit/admin_cubit.dart';
-import 'features/roles/lab_tech/cubit/lab_tech_cubit.dart';
-import 'features/roles/pharmacist/cubit/pharmacist_cubit.dart';
-import 'features/roles/rider/cubit/rider_cubit.dart';
-import 'features/search/cubit/search_cubit.dart';
+
 import 'firebase_options.dart';
-import 'core/services/notification_service.dart';
-import 'core/di/service_locator.dart';
+import 'core/services.dart';
+import 'core/repositories.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+    WidgetsFlutterBinding.ensureInitialized();
+
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      debugPrint('Flutter Error: ${details.exceptionAsString()}');
+    };
+
+    PlatformDispatcher.instance.onError = (error, stack) {
+      debugPrint('Platform Error: $error\n$stack');
+      return true;
+    };
+
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e) {
+      debugPrint("Could not load .env file: $e");
+    }
+
+    await AppSession.init();
+
+    bool serviceLocatorReady = false;
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+
+      if (FirebaseAuth.instance.currentUser == null) {
+        try {
+          await FirebaseAuth.instance.signInAnonymously().timeout(
+            Duration(seconds: 5),
+          );
+        } catch (e) {
+          debugPrint('Anonymous sign-in failed/timeout: $e');
+        }
+      }
+
+      await setupServiceLocator();
+      serviceLocatorReady = true;
+
+      // Defer NotificationService init after first frame to avoid freeze
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        NotificationService.init();
+      });
+    } catch (e, stackTrace) {
+      debugPrint("Firebase/ServiceLocator initialization error: $e");
+      // DO NOT SWALLOW FIREBASE INIT ERRORS
+      throw Exception(
+        "FATAL: Firebase Initialization Failed.\nError: $e\nStackTrace: $stackTrace",
+      );
+    }
+
+    final themeCubit = ThemeCubit();
+    final localeCubit = LocaleCubit();
+    final cartCubit = CartCubit();
+    final productCubit = ProductCubit();
+    final wishlistCubit = WishlistCubit();
+
+    HomeCubit? homeCubit;
+    if (serviceLocatorReady) {
+      try {
+        homeCubit = HomeCubit(
+          articleRepository: getIt<ArticleRepository>(),
+          settingsRepository: getIt<SettingsRepository>(),
+          productRepository: getIt<ProductRepository>(),
+        );
+      } catch (e) {
+        debugPrint("HomeCubit init failed: $e");
+      }
+    }
+
+    homeCubit ??= HomeCubit.empty();
+
+    try {
+      await Future.wait<void>([
+        themeCubit.loadSavedTheme(),
+        localeCubit.loadSavedLocale(),
+        wishlistCubit.loadWishlist(),
+      ]);
+    } catch (e) {
+      debugPrint("Pre-launch load error: $e");
+    }
+
+    if (serviceLocatorReady) {
+      productCubit.load();
+    }
+
+    runApp(
+      ScreenUtilInit(
+        designSize: Size(375, 812),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: themeCubit),
+              BlocProvider.value(value: localeCubit),
+              BlocProvider.value(value: productCubit),
+              BlocProvider.value(value: wishlistCubit),
+              BlocProvider(create: (_) => AuthCubit()),
+              BlocProvider(
+                create: (context) =>
+                    NotificationCubit(authCubit: context.read<AuthCubit>()),
+              ),
+              BlocProvider(create: (_) => OrdersCubit()..load()),
+              BlocProvider.value(value: cartCubit),
+              BlocProvider.value(value: homeCubit!),
+            ],
+            child: HealMealApp(),
+          );
+        },
+      ),
     );
-    // Initialize services in background
-    NotificationService.init();
-    await setupServiceLocator();
-  } catch (e) {
-    debugPrint("Firebase initialization error: $e");
+  } catch (error, stackTrace) {
+    debugPrint('Startup error: $error\n$stackTrace');
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Padding(
+            padding: EdgeInsets.all(24.0.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red, size: 64.w),
+                SizedBox(height: 16.h),
+                Text(
+                  'App crashed on startup',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      '$error\n$stackTrace',
+                      style: TextStyle(fontSize: 12.sp, color: Colors.red),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
-
-  await AppSession.init();
-
-  final themeCubit = ThemeCubit();
-  final localeCubit = LocaleCubit();
-  final wishlistCubit = WishlistCubit();
-
-  await Future.wait<void>([
-    themeCubit.loadSavedTheme(),
-    localeCubit.loadSavedLocale(),
-    wishlistCubit.load(),
-  ]);
-
-  runApp(
-    MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: themeCubit),
-        BlocProvider.value(value: localeCubit),
-        BlocProvider.value(value: wishlistCubit),
-        BlocProvider(create: (_) => AuthCubit()),
-        BlocProvider(create: (_) => CartCubit()),
-      ],
-      child: const HealMealApp(),
-    ),
-  );
 }
-

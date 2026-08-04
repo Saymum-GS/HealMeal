@@ -73,3 +73,6 @@ firebase.json
 firestore.indexes.json
 firestore.rules
 lib/firebase_options.dart
+serviceAccountKey.json
+archive - trash - don't enter/
+node_modules/

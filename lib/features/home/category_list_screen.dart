@@ -1,33 +1,56 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/models/category.dart';
+import '../../core/repositories.dart';
+import '../../core/services.dart';
+import '../../core/config.dart';
+import '../../core/widgets.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../core/constants/app_text_styles.dart';
-import '../../core/utils/app_layout.dart';
-import '../../core/widgets/common/healmeal_app_bar.dart';
-
-class CategoryListScreen extends StatelessWidget {
+class CategoryListScreen extends StatefulWidget {
   const CategoryListScreen({super.key});
 
   @override
+  State<CategoryListScreen> createState() => _CategoryListScreenState();
+}
+
+class _CategoryListScreenState extends State<CategoryListScreen> {
+  late Future<List<AppCategory>> _categoriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoriesFuture = getIt<CategoryRepository>().getCategories();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('categories').snapshots(),
+    return FutureBuilder<List<AppCategory>>(
+      future: _categoriesFuture,
       builder: (context, snapshot) {
-        final categoryDocs = snapshot.data?.docs ?? [];
-        final categories = categoryDocs
-          .where((doc) => doc.id != 'flash-sale')
-          .map((doc) => (doc.id, (doc.data() as Map)['name'] as String))
-          .toList();
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: HealMealAppBar(
+              title: 'Categories',
+              showSearch: true,
+              showCart: true,
+            ),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final categories = (snapshot.data ?? [])
+            .where((cat) => cat.id != 'flash-sale' && cat.isActive)
+            .toList();
+
         return Scaffold(
-          appBar: const HealMealAppBar(
+          appBar: HealMealAppBar(
             title: 'Categories',
             showSearch: true,
             showCart: true,
           ),
           body: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: AppLayout.cardGrid(
+            padding: EdgeInsets.all(16.w),
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 220,
               mainAxisExtent: 112,
               mainAxisSpacing: 12,
@@ -37,18 +60,47 @@ class CategoryListScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final category = categories[index];
               return InkWell(
-                onTap: () => context.push('/category/${category.$1}'),
+                onTap: () => context.push('/category/${category.id}'),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: Theme.of(context).dividerColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: category.color.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Center(
-                    child: Text(
-                      category.$2,
-                      style: AppTextStyles.h3,
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: category.color.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            category.icon,
+                            color: category.color,
+                            size: 28.w,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          category.name,
+                          style: AppTextStyles.labelMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 ),

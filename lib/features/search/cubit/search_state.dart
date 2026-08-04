@@ -28,4 +28,3 @@ class SearchState extends Equatable {
   @override
   List<Object?> get props => [status, query, results];
 }
-

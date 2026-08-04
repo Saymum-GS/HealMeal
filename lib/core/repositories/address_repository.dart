@@ -1,27 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../data/models.dart';
+import '../models.dart';
 
 class AddressRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Stream<List<Address>> getUserinitialAddresses(String userId) {
+  Stream<List<Address>> getUserAddresses(String userId) {
     return _firestore
         .collection('users')
         .doc(userId)
-        .collection('initialAddresses')
+        .collection('addresses')
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => _decodeAddress(doc.data())).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => _decodeAddress(doc.data())).toList(),
+        );
   }
 
   Future<void> saveAddress(String userId, Address address) async {
     final ref = _firestore
         .collection('users')
         .doc(userId)
-        .collection('initialAddresses')
+        .collection('addresses')
         .doc(address.id.isEmpty ? null : address.id);
-    
+
     final id = address.id.isEmpty ? ref.id : address.id;
-    
+
     await ref.set({
       ..._encodeAddress(address),
       'id': id,
@@ -32,7 +35,7 @@ class AddressRepository {
     await _firestore
         .collection('users')
         .doc(userId)
-        .collection('initialAddresses')
+        .collection('addresses')
         .doc(addressId)
         .delete();
   }
@@ -69,4 +72,3 @@ class AddressRepository {
     };
   }
 }
-
